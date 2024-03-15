@@ -16,7 +16,7 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
     def __init__(self, domain, formats):
         self.domain = domain
         self.formats = formats
-    
+
 
 
     # Retrieves and processes package/dataset metadata.

@@ -12,23 +12,16 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Arguments
-
     parser.add_argument('-d', '--domain', type=str, required=True)
     parser.add_argument('-p', '--path', type=str, required=False)
-    parser.add_argument('-m','--save_meta', required=False, action=argparse.BooleanOptionalAction)
     parser.add_argument('-f', '--formats', nargs='+', required=False)
-
 
     args = vars(parser.parse_args())
 
     # Save arguments to variables
-
     url = args['domain']
     path = args['path']
-    save_meta = args['save_meta']
     formats = list(map(lambda x: x.lower(), args['formats'])) if args['formats'] else None
-
-    
 
     # Main script
 
@@ -60,19 +53,18 @@ def main():
 
                         if package:
                             updated_package = crawler.get_package_resources(package)
-                            if save_meta and updated_package:
+                            if updated_package:
                                 crawler.save_metadata(updated_package)
 
                     # Removes resume_data if all resources were succesfully saved.
                     os.remove(crawler.resume_path)
-                else: 
+                else:
                     print("Error ocurred while obtaining packages!")
-
 
         else:
             print("Incorrect domain form.\nMust have the form "
-                "https://domain.example or http://domain.example")
-    
+                  "https://domain.example or http://domain.example")
+
     except Exception:
         print(traceback.format_exc())
         print('Keyboard interrumption!')
