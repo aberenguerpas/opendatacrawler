@@ -4,6 +4,7 @@ feedparser==6.0.8
 html2text==2020.1.16
 idna==3.3
 mccabe==0.6.1
+numpy==1.26.4
 pyflakes==2.4.0
 requests==2.27.1
 sgmllib3k==1.0.0
