@@ -21,7 +21,8 @@ def main():
     # Save arguments to variables
     url = args['domain']
     path = args['path']
-    formats = list(map(lambda x: x.lower(), args['formats'])) if args['formats'] else None
+    formats = list(
+        map(lambda x: x.lower(), args['formats'])) if args['formats'] else None
 
     # Main script
 
@@ -38,9 +39,11 @@ def main():
 
                 # Checks for previous downloaded packages.
                 if crawler.last_ids:
-                    package_difference = utils.get_difference(packages_ids, crawler.last_ids)
+                    package_difference = utils.get_difference(
+                        packages_ids, crawler.last_ids)
                     packages_ids = package_difference
-                    print('Previous download detected! ({} packages left)'.format(len(package_difference)))
+                    print('Previous download detected! ({} packages left)'.format(
+                        len(package_difference)))
                     print('Resuming...')
                 else:
                     print('Previous download not detected.')
@@ -52,7 +55,8 @@ def main():
                         package = crawler.get_package(id)
 
                         if package:
-                            updated_package = crawler.get_package_resources(package)
+                            updated_package = crawler.get_package_resources(
+                                package)
                             if updated_package:
                                 crawler.save_metadata(updated_package)
 

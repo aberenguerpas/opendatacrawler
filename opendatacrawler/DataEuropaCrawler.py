@@ -130,67 +130,46 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
 
     # Retrieves ids from all datasets.
     def get_package_list(self):
-        url = """search?q=&filter=dataset&limit=1000&page={}&sort=relevance%2Bdesc,+modified%2Bdesc,+
-        title.en%2Basc&facetOperator=OR&facetGroupOperator=OR&dataServices=false&includes=id,title.en,description.en,languages,modified,
-        issued,catalog.id,catalog.title,catalog.country.id,distributions.id,distributions.format.label,distributions.format.id,distributions.
-        license,categories.label,publisher"""
-        ids = []
-        formats = []
-        result_count = []
 
+        ids = []
+        params = {}
+        q_w = ""        
+        url = 'https://data.europa.eu/sparql'
+                
+        # Total datasets
         if self.formats:
-            formats = ["%22" + format.upper() + "%22" for format in self.formats]
+            format_text = " || ".join([f"CONTAINS(LCASE(STR(?format)),'{f}')" for f in self.formats])
+            q_w = """
+             where{
+                ?dataset a <http://www.w3.org/ns/dcat#Dataset> .
+                ?dataset <http://www.w3.org/ns/dcat#distribution> ?distribution .
+                ?distribution <http://purl.org/dc/terms/format> ?format .
+                FILTER ("""+format_text+")}"
+        else:
+            q_w = 'where{?dataset a <http://www.w3.org/ns/dcat#Dataset>'
         
-        # Checks number of results.
-        response = requests.get(DataEuropaCrawler.base_url+url.format(1)+
-                                    "&facets=%7B%22format%22:[{}]%7D".format(",".join(formats)))
-        data = response.json().get('result')
-        result_count = data.get('count')
+        params = {
+                'query': 'select (count( distinct ?dataset) as ?total)' + q_w
+        }
 
-        # Estimates number of pages.
-        total_pages = int(result_count/1000) + 1
-        pages_list = range(1, total_pages)
-
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [executor.submit(self.get_ids_page, url, page, formats) for page in pages_list]
-            pbar = tqdm(total = total_pages, bar_format='{desc}: {percentage:3.0f}%|{bar}')
-            try:
-                 for future in as_completed(futures):
-                      result = future.result()
-                      ids.extend(result)
-                      pbar.update(1)
-            except Exception as e:
-                print(e)
+        header = {
+            'Accept': 'application/sparql-results+json'
+        }
+        res = requests.get(url, params=params, headers=header)
         
-        return ids
-    
-    # Retrieves ids from page.
-    def get_ids_page(self, url, page, formats):
-        ids = []
-        response = requests.get(DataEuropaCrawler.base_url+url.format(page)+
-                                        "&facets=%7B%22format%22:[{}]%7D".format(",".join(formats)))
-        if response.status_code==200:
-            data = response.json().get('result')
-            if len(data.get('results'))!=0:
-                datasets = data.get('results')
-                for dataset in datasets:
-                     ids.append(dataset.get('id'))
+        total = int(res.json()['results']['bindings'][0]['total']['value'])
+        
+        
+        # Retrieve ids
+        for offset in tqdm(range(0,total,50000), total=total):
+            params = {
+                'query': 'select distinct ?dataset '+q_w+' LIMIT 50000 OFFSET '+ str(offset)
+            }
+            header = {
+                'Accept': 'application/sparql-results+json'
+            }
+            res = requests.get(url, params=params, headers=header)
             
+            ids.extend(list(map(lambda dataset: dataset['dataset']['value'].split("/")[-1], res.json()['results']['bindings'])))
         return ids
-
     
-    def pages_iter(self, page_count):
-        page_chunks = []
-
-        for i in range(1, page_count+1, 5):
-            group = list(range(i, min(i+5, page_count+1)))
-            page_chunks.append(group)
-        
-        return page_chunks
-        
-
-   
-
-    
-
-        
