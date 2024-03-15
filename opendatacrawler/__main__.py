@@ -55,6 +55,7 @@ def main():
                 # Saves resources and metadata for each package.
                 if packages_ids:
                     for id in tqdm(packages_ids, desc="Processing", colour="green"):
+                        logger.info('STARTING PACKAGE {}'.format(id))
                         package = crawler.get_package(id)
 
                         if package:

@@ -10,6 +10,7 @@ from DataEuropaCrawler import DataEuropaCrawler
 import urllib3
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import concurrent.futures.thread
 from tqdm import tqdm
 from threading import Event
 import signal
@@ -102,7 +103,12 @@ class OpenDataCrawler():
                 logger.info("Saving... %s ", url)
 
                 with requests.get(url, stream=True, timeout=60, verify=False) as r:
-                    if r.status_code == 200:
+
+                    # Checks if response content is not a webpage.
+                    response_content_type = r.headers.get('Content-Type')
+                    is_html = 'text/html' in response_content_type
+                    
+                    if r.status_code == 200 and not is_html:
                         fname = id + '.' + ext 
                         path = self.save_path + "/data" + "/"+ fname
                         total_size = int(r.headers.get('content-length', 0))
@@ -114,7 +120,7 @@ class OpenDataCrawler():
                                 # Stops file download if max download time is reached.
                                 if self.max_sec and ((time.time() - start_time) > self.max_sec):
                                     partial = True
-                                    logger.warning('Timeout! Partially downloaded file %s', url)
+                                    logger.warning('Timeout! Partially downloaded file: {}/{}'.format(url, id))
                                     break
 
                                 if chunk:
@@ -123,7 +129,7 @@ class OpenDataCrawler():
                                     bar.update(size)
                                     
                         if not partial:
-                            logger.info("Dataset saved from %s", url)
+                            logger.info("Dataset saved from {}/{}".format(url, id))
                             return (id, path, partial)
                         else:
                             #utils.delete_interrupted_files(path)
@@ -203,12 +209,13 @@ class OpenDataCrawler():
                         except Exception as e:
                             print(f"An error occurred: {e}")
                 except KeyboardInterrupt:
-                        time.sleep(5)
-                        for id, mediatype in zip(ids, mediatypes):
+                    executor._threads.clear()
+                    concurrent.futures.thread._threads_queues.clear()
+                    for id, mediatype in zip(ids, mediatypes):
                             path = self.save_path + '/data' + '/{}.{}'.format(id, mediatype)
                             utils.delete_interrupted_files(path)
-                        logger.info("Keyboard interruption!")
-                        exit()
+                    logger.info("Keyboard interruption!")
+                    exit()
 
             # Metadata for each downloaded resource is updated.
             for result in results:
@@ -220,9 +227,10 @@ class OpenDataCrawler():
 
                     if current_path != None and not is_partial :
                         current_resource['path'] = current_path
-                    elif current_path != None:
+                    elif current_path != None:          
                         current_resource['path'] = None
-                        os.remove(current_path)
+                        # Removes file if it was partially downloaded due to a timeout.
+                        utils.delete_interrupted_files(current_path)
                     else:
                         current_resource['path'] = None
 
