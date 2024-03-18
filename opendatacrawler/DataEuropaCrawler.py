@@ -12,6 +12,11 @@ from sys import exit
 class DataEuropaCrawler(OpenDataCrawlerInterface):
 
     base_url = 'https://data.europa.eu/api/hub/search/'
+    formats_dict = {
+         'csv':['csv','text/csv','.csv','csv/utf8','file:///srv/udata/ftype/csv'],
+         'xlsx':['xlsx','xls','.xlsx','.xls','excel (.xlsx)'],
+         'pdf':['pdf','.pdf','application/pdf']
+    }
 
     def __init__(self, domain, formats):
         self.domain = domain
@@ -105,7 +110,9 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                 if response_json.get('distributions'):
                     for resource in response_json.get('distributions'):
                         format = None if resource.get('format') is None else resource.get('format').get('id', None)
-                        if resource.get('access_url')[0]:
+                        if resource.get('download_url'):
+                             download_url = resource.get('download_url')[0]
+                        elif resource.get('access_url'):
                             access_url =  resource.get('access_url')[0]
                             if '&compressed=true' in access_url:
                                 download_url = access_url.replace('&compressed=true', '')
@@ -146,7 +153,7 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                 ?distribution <http://purl.org/dc/terms/format> ?format .
                 FILTER ("""+format_text+")}"
         else:
-            q_w = 'where{?dataset a <http://www.w3.org/ns/dcat#Dataset>'
+            q_w = 'where{?dataset a <http://www.w3.org/ns/dcat#Dataset>}'
         
         params = {
                 'query': 'select (count( distinct ?dataset) as ?total)' + q_w
@@ -161,7 +168,7 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
         
         
         # Retrieve ids
-        for offset in tqdm(range(0,total,50000), total=total):
+        for offset in tqdm(range(0,total,50000)):
             params = {
                 'query': 'select distinct ?dataset '+q_w+' LIMIT 50000 OFFSET '+ str(offset)
             }

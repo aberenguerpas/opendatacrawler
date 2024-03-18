@@ -87,6 +87,12 @@ class OpenDataCrawler():
             if self.dms=='Zenodo':
                 self.dms_instance = ZenodoCrawler(self.dms, self.formats)
             if self.dms=='DataEuropa':
+                if self.formats:
+                    formats = []
+                    for format in self.formats:
+                        if format in DataEuropaCrawler.formats_dict:
+                            formats.extend(DataEuropaCrawler.formats_dict.get(format))
+                    self.formats = formats
                 self.dms_instance = DataEuropaCrawler(self.dms, self.formats)
         else:
             print("The domain " + self.domain + " is not supported yet")
