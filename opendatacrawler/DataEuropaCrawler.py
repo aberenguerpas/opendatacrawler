@@ -1,16 +1,9 @@
-from crawler_interface_abc import OpenDataCrawlerInterface
-import configparser
 import utils
 import requests
-import sys
-from setup_logger import logger
+from crawler_interface_abc import OpenDataCrawlerInterface
 from tqdm import tqdm
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import concurrent.futures.thread
-from sys import exit
 
 class DataEuropaCrawler(OpenDataCrawlerInterface):
-
     base_url = 'https://data.europa.eu/api/hub/search/'
     formats_dict = {
          'csv':['csv','text/csv','.csv','csv/utf8','file:///srv/udata/ftype/csv'],
@@ -23,7 +16,6 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
         self.formats = formats
 
 
-
     # Retrieves and processes package/dataset metadata.
     def get_package(self, id):
             url = DataEuropaCrawler.base_url + 'datasets/{}'.format(id)
@@ -32,7 +24,6 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                 response.raise_for_status()
                 response_json = response.json()['result']
                 hash_id = utils.generate_hash(self.domain, id)
-                filtered_resources = []
                 resources = []
 
                 # Initialize metadata dict.
@@ -44,9 +35,10 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                      'description': None,
                      'theme': None,
                      'keywords': None,
+                     'publisher': None,
+                     'language': None,
                      'issued': None,
                      'modified': None,
-                     'license': None,
                      'country': None,
                      'resources': None
                 }
@@ -63,14 +55,18 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                           package_data['description'] = response_json.get('description').get('es')
                     elif response_json.get('description').get('en'):
                          package_data['description'] = response_json.get('description').get('en')
-            
-                if response_json.get('license'):
-                     if response_json.get('license').get('id'):
-                          package_data['license'] = response_json.get('license').get('id')
 
                 if response_json.get('country'):
-                     if response_json.get('country').get('label'):
-                          package_data['country'] = response_json.get('country').get('label')
+                          package_data['country'] = response_json['country'].get('label', None)
+                          
+                if response_json.get('language'):
+                          package_data['language'] = response_json['language'][0].get('label', None)
+                          
+                if response_json.get('catalog'):
+                     if response_json.get('catalog').get('publisher'):
+                          package_data['publisher'] = {}
+                          package_data['publisher']['name'] = response_json.get('catalog').get('publisher').get('name', None)
+                          package_data['publisher']['homepage'] = response_json.get('catalog').get('publisher').get('homepage', None)
                 
                 if response_json.get('categories'):
                     categories = []
@@ -104,36 +100,60 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                             
                 package_data['issued'] = response_json.get('issued', None)
                 package_data['modified'] = response_json.get('modified', None)
-                package_data['url'] = response_json.get('resource', None)
+                package_data['url'] = response_json.get('resource', None).replace("88u/dataset","data/datasets")
 
                 # Save resources metadata.
                 if response_json.get('distributions'):
-                    for resource in response_json.get('distributions'):
-                        format = None if resource.get('format') is None else resource.get('format').get('id', None)
-                        if resource.get('download_url'):
-                             download_url = resource.get('download_url')[0]
-                        elif resource.get('access_url'):
-                            access_url =  resource.get('access_url')[0]
-                            if '&compressed=true' in access_url:
-                                download_url = access_url.replace('&compressed=true', '')
-                            else: 
-                                download_url = access_url
-                        else:
-                            download_url = None
-
-                        resources.append({
-                            'download_url': download_url,
-                            'resource_id': utils.generate_hash(self.domain, resource.get('id', None)),
-                            'mediatype': format.lower() if format else None,
-                            'path': None                            
-                        })
+                    if len(response_json['distributions']) > 0:
+                        for resource in response_json.get('distributions'):
+                            format = None if resource.get('format') is None else resource.get('format').get('id', None)
+                            if resource.get('download_url'):
+                                download_url = resource.get('download_url')[0]
+                            elif resource.get('access_url'):
+                                access_url =  resource.get('access_url')[0]
+                                if '&compressed=true' in access_url:
+                                    download_url = access_url.replace('&compressed=true', '')
+                                else: 
+                                    download_url = access_url
+                            else:
+                                download_url = None
+                            
+                            license = None 
+                            
+                            if resource.get('rights'):
+                                license = resource.get('rights').get('resource', None)
+                            
+                            if resource.get('license'):
+                                license = resource.get('license').get('label', None)
+                            
+                            resources.append({
+                                'download_url': download_url,
+                                'resource_id': utils.generate_hash(self.domain, resource.get('id', None)),
+                                'mediatype': format.lower() if format else None,
+                                'license': license,
+                                'path': None                            
+                            })
+                    else:
+                    # No resources, maybe link to web with the info
+                        if package_data.get('landing_page'):
+                            for landing in package_data.get('landing_page'):
+                                resources.append({
+                                    'download_url':  landing['resource'],
+                                    'resource_id': None,
+                                    'mediatype': 'Web',
+                                    'license': None,
+                                    'resource_id': None,
+                                    'title': list(landing['title'].keys())[0]
+                                    
+                                })
                 
                 package_data['resources'] = resources
 
                 return package_data
-            
-            except requests.exceptions.HTTPError as e:
-                logger.exception(e)
+            except Exception as e:
+                print(e)
+            #except requests.exceptions.HTTPError as errh:
+            #        print(f"HTTP Error: {errh}")
                 return None
 
 
@@ -160,7 +180,7 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
         params = {
                 'query': 'select (count( distinct ?dataset) as ?total)' + q_w
         }
-
+        
         header = {
             'Accept': 'application/sparql-results+json'
         }

@@ -6,7 +6,6 @@ import traceback
 from tqdm import tqdm
 from odcrawler import OpenDataCrawler
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import concurrent.futures.thread
 from sys import exit
 
 

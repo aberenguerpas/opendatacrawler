@@ -1,13 +1,10 @@
 
 import os
-from url_normalize import url_normalize
-from w3lib.url import url_query_cleaner
 import configparser
 import pathlib
 import hashlib
-import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import numpy as np
+from url_normalize import url_normalize
+from w3lib.url import url_query_cleaner
 from setup_logger import logger
 
 def check_url(url):
