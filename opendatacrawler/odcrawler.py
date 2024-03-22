@@ -240,6 +240,7 @@ class OpenDataCrawler():
                     self.save_metadata(updated_package)
             elif package:
                 self.save_metadata(package)
+                utils.save_temporal_ids(self.resume_path, [package['id']])
         except KeyboardInterrupt:
             raise
             

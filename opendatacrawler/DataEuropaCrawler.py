@@ -132,8 +132,9 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
 
                 return package_data
             
-            except requests.exceptions.HTTPError as errh:
-                    print(f"HTTP Error: {errh}")
+            except requests.exceptions.HTTPError as e:
+                logger.exception(e)
+                return None
 
 
     # Retrieves ids from all datasets.
