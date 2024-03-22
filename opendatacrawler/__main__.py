@@ -5,6 +5,9 @@ from setup_logger import logger
 import traceback
 from tqdm import tqdm
 from odcrawler import OpenDataCrawler
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import concurrent.futures.thread
+from sys import exit
 
 
 def main():
@@ -14,13 +17,17 @@ def main():
     # Arguments
     parser.add_argument('-d', '--domain', type=str, required=True)
     parser.add_argument('-p', '--path', type=str, required=False)
-    parser.add_argument('-f', '--formats', nargs='+', required=False)
+    parser.add_argument('-f', '--formats', nargs='+', required=False,
+                        help='Filter which resources will be downloaded by format (csv, xlsx, pdf, zip)')
+    parser.add_argument('-m','--metadata', required=False, action=argparse.BooleanOptionalAction,
+                        help='Only save metadata.')
 
     args = vars(parser.parse_args())
 
     # Save arguments to variables
     url = args['domain']
     path = args['path']
+    only_metadata = args['metadata']
     formats = list(
         map(lambda x: x.lower(), args['formats'])) if args['formats'] else None
 
@@ -28,7 +35,7 @@ def main():
 
     try:
         if (utils.check_url(url)):
-            crawler = OpenDataCrawler(domain=url, path=path, formats=formats)
+            crawler = OpenDataCrawler(domain=url, path=path, formats=formats, only_metadata=only_metadata)
 
             if crawler.dms:
                 logger.info("Obtaining packages from %s", url)
@@ -50,16 +57,18 @@ def main():
 
                 # Saves resources and metadata for each package.
                 if packages_ids:
-                    for id in tqdm(packages_ids, desc="Processing", colour="green"):
-                        logger.info('STARTING PACKAGE {}'.format(id))
-                        package = crawler.get_package(id)
-
-                        if package:
-                            updated_package = crawler.get_package_resources(
-                                package)
-                            if updated_package:
-                                crawler.save_metadata(updated_package)
-
+                    pbar = tqdm(total = len(packages_ids))
+                    with ThreadPoolExecutor(max_workers=5) as executor:
+                        try:
+                            futures = [executor.submit(crawler.process_package, id) for id in packages_ids]
+                            for _ in as_completed(futures):
+                                pbar.update(1)
+                        except KeyboardInterrupt:
+                            print('\nWaiting for left tasks to complete!')
+                            logger.info("Keyboard interruption!")
+                            logger.info('Waiting for left tasks to complete!')
+                            executor.shutdown(wait=False, cancel_futures=True)
+                            exit()
                     # Removes resume_data if all resources were succesfully saved.
                     os.remove(crawler.resume_path)
                 else:

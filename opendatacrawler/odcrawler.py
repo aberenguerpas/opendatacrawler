@@ -22,7 +22,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class OpenDataCrawler():
 
-    def __init__(self, domain, path, formats=None, sec=None):
+    def __init__(self, domain, path, formats=None, only_metadata=False):
         
         if domain[-1]=="/":
             self.domain = domain[:-1]
@@ -32,6 +32,7 @@ class OpenDataCrawler():
         self.formats = formats
         self.max_sec = 60
         self.last_ids = None
+        self.only_metadata = only_metadata
 
         # Save path or create one based on selected domain. Create selected dms directory.
         if not path:
@@ -145,11 +146,15 @@ class OpenDataCrawler():
                         logger.warning('Problem obtaining the resource %s', url)
 
                         return (id, None, False)
-                    
+
+        except KeyboardInterrupt:
+            raise
+                   
         except Exception as e:
             logger.error('Error saving dataset from %s', url)
             logger.error(e)
             return (id, None, False)
+        
     
     def save_partial_dataset():
         return None
@@ -177,9 +182,6 @@ class OpenDataCrawler():
         resources = package['resources']
         downloaded_resources = []
         updated_resources = []
-        urls = []
-        ids = []
-        mediatypes = []
         
         # Filters resources by format if specified. Selects all resources otherwise.
         if self.formats:
@@ -195,63 +197,27 @@ class OpenDataCrawler():
 
         # Downloads and saves selected resources.
         if len(downloaded_resources) > 0:
-            urls = [resource['download_url'] for resource in downloaded_resources]
-            ids = [resource['resource_id'] for resource in downloaded_resources]
-            mediatypes = [resource['mediatype'] for resource in downloaded_resources]
-            results = []
+            for resource in downloaded_resources:
+                url = resource['download_url']
+                id = resource['resource_id']
+                mediatype = resource['mediatype']
 
-            # Parallel download of resources.
-            with ThreadPoolExecutor(max_workers=5) as executor:
-            # Submit tasks to the executor.
-                futures = [executor.submit(self.save_dataset, url, mediatype, id) for url, mediatype, id in zip(urls, mediatypes, ids)]
+                result = self.save_dataset(url, mediatype, id)
+                current_path = result[1]
+                is_partial = result[2]
                 
-                # Wait for all tasks to complete.
-                try:
-                    for future in as_completed(futures):
-                        try:
-                            results.append(
-                                future.result()
-                                )
-                        except Exception as e:
-                            print(f"An error occurred: {e}")
-                except KeyboardInterrupt:
-                    executor._threads.clear()
-                    concurrent.futures.thread._threads_queues.clear()
-                    for id, mediatype in zip(ids, mediatypes):
-                            path = self.save_path + '/data' + '/{}.{}'.format(id, mediatype)
-                            utils.delete_interrupted_files(path)
-                    logger.info("Keyboard interruption!")
-                    exit()
+                if current_path != None and not is_partial :
+                    resource['path'] = current_path
+                elif current_path != None:          
+                    # Removes file if it was partially downloaded due to a timeout.
+                    utils.delete_interrupted_files(current_path)
+                
+                updated_resources.append(resource)
 
-            # Metadata for each downloaded resource is updated.
-            for result in results:
-                try:
-                    current_id = result[0]
-                    current_path = result[1]
-                    is_partial = result[2]
-                    current_resource = [resource for resource in downloaded_resources if resource['resource_id']==current_id][0]
-
-                    if current_path != None and not is_partial :
-                        current_resource['path'] = current_path
-                    elif current_path != None:          
-                        current_resource['path'] = None
-                        # Removes file if it was partially downloaded due to a timeout.
-                        utils.delete_interrupted_files(current_path)
-                    else:
-                        current_resource['path'] = None
-
-                    updated_resources.append(current_resource)
-                except Exception as e:
-                    logger.error(e)
-
-            #if any(any(value != None for value in d.values()) for d in updated_resources)
-            package['resources'] = updated_resources
-            utils.save_temporal_ids(self.resume_path, [package['id']])
-            return package
-        else:
-            utils.save_temporal_ids(self.resume_path, [package['id']])
-            return package
-
+        package['resources'] = updated_resources
+        utils.save_temporal_ids(self.resume_path, [package['id']])
+        
+        return package
 
 
     def get_last_ids(self):
@@ -263,3 +229,17 @@ class OpenDataCrawler():
             return saved_ids
         else:
             return None
+
+
+    def process_package(self, id):
+        try:
+            package = self.get_package(id)
+            if package and not self.only_metadata:
+                updated_package = self.get_package_resources(package)
+                if updated_package:
+                    self.save_metadata(updated_package)
+            elif package:
+                self.save_metadata(package)
+        except KeyboardInterrupt:
+            raise
+            

@@ -124,7 +124,8 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                         resources.append({
                             'download_url': download_url,
                             'resource_id': utils.generate_hash(self.domain, resource.get('id', None)),
-                            'mediatype': format.lower() if format else None                               
+                            'mediatype': format.lower() if format else None,
+                            'path': None                            
                         })
                 
                 package_data['resources'] = resources
@@ -168,7 +169,7 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
         
         
         # Retrieve ids
-        for offset in tqdm(range(0,total,50000)):
+        for offset in tqdm(range(0,total,50000), bar_format='{desc}: {percentage:3.0f}%|{bar}'):
             params = {
                 'query': 'select distinct ?dataset '+q_w+' LIMIT 50000 OFFSET '+ str(offset)
             }
