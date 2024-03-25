@@ -1,6 +1,6 @@
 import requests
-from . import utils
-from .crawler_interface_abc import OpenDataCrawlerInterface
+import utils
+from crawler_interface_abc import OpenDataCrawlerInterface
 from tqdm import tqdm
 
 class DataEuropaCrawler(OpenDataCrawlerInterface):
@@ -204,7 +204,6 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
         url = 'https://data.europa.eu/sparql'
         
         # Total datasets
-        print(self.formats)
         if self.formats:
             format_text = " || ".join([f"CONTAINS(LCASE(STR(?format)),'{f}')" for f in self.formats])
             q_w = """

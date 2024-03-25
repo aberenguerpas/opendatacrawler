@@ -4,7 +4,7 @@ import pathlib
 import hashlib
 from url_normalize import url_normalize
 from w3lib.url import url_query_cleaner
-from . import setup_logger
+import setup_logger
 
 logger = setup_logger.create_logger()
 

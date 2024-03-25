@@ -1,7 +1,7 @@
-from . import utils
-from . import setup_logger
+import utils
+import setup_logger
 from tqdm import tqdm
-from .odcrawler import OpenDataCrawler
+from odcrawler import OpenDataCrawler
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from sys import exit
 import argparse

@@ -1,13 +1,13 @@
 import os
 import requests
-from . import utils
+import utils
 import time
 import json
 import urllib3
 import time
-from . import setup_logger
-from .ZenodoCrawler import ZenodoCrawler
-from .DataEuropaCrawler import DataEuropaCrawler
+import setup_logger
+from ZenodoCrawler import ZenodoCrawler
+from DataEuropaCrawler import DataEuropaCrawler
 from tqdm import tqdm
 from sys import exit
 

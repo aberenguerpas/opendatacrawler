@@ -1,9 +1,9 @@
 
-from .crawler_interface_abc import OpenDataCrawlerInterface
-from . import utils
+from crawler_interface_abc import OpenDataCrawlerInterface
+import utils
 import requests
 import time
-from . import setup_logger
+import setup_logger
 from tqdm import tqdm
 
 class ZenodoCrawler(OpenDataCrawlerInterface):
