@@ -1,16 +1,15 @@
-import argparse
-import utils
-import os
-from setup_logger import logger
-import traceback
+from . import utils
+from . import setup_logger
 from tqdm import tqdm
-from odcrawler import OpenDataCrawler
+from .odcrawler import OpenDataCrawler
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from sys import exit
+import argparse
+import os
+import traceback
 
 
 def main():
-
     parser = argparse.ArgumentParser()
 
     # Arguments
@@ -20,8 +19,10 @@ def main():
                         help='Filter which resources will be downloaded by format (csv, xlsx, pdf, zip)')
     parser.add_argument('-m','--metadata', required=False, action=argparse.BooleanOptionalAction,
                         help='Only save metadata.')
-
+  
     args = vars(parser.parse_args())
+    
+    logger = setup_logger.create_logger()
 
     # Save arguments to variables
     url = args['domain']
@@ -72,7 +73,6 @@ def main():
                     os.remove(crawler.resume_path)
                 else:
                     print("Error ocurred while obtaining packages!")
-
         else:
             print("Incorrect domain form.\nMust have the form "
                   "https://domain.example or http://domain.example")

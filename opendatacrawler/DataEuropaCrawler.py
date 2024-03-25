@@ -1,6 +1,6 @@
-import utils
 import requests
-from crawler_interface_abc import OpenDataCrawlerInterface
+from . import utils
+from .crawler_interface_abc import OpenDataCrawlerInterface
 from tqdm import tqdm
 
 class DataEuropaCrawler(OpenDataCrawlerInterface):
@@ -14,7 +14,6 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
     def __init__(self, domain, formats):
         self.domain = domain
         self.formats = formats
-
 
     # Retrieves and processes package/dataset metadata.
     def get_package(self, id):
@@ -199,13 +198,13 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
 
     # Retrieves ids from all datasets.
     def get_package_list(self):
-
         ids = []
         params = {}
         q_w = ""        
         url = 'https://data.europa.eu/sparql'
-                
+        
         # Total datasets
+        print(self.formats)
         if self.formats:
             format_text = " || ".join([f"CONTAINS(LCASE(STR(?format)),'{f}')" for f in self.formats])
             q_w = """
@@ -224,6 +223,7 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
         header = {
             'Accept': 'application/sparql-results+json'
         }
+
         res = requests.get(url, params=params, headers=header)
         
         total = int(res.json()['results']['bindings'][0]['total']['value'])

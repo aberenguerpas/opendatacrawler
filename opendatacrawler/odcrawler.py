@@ -1,24 +1,19 @@
 import os
 import requests
-import utils
-import re
+from . import utils
 import time
 import json
-from setup_logger import logger
-from ZenodoCrawler import ZenodoCrawler
-from DataEuropaCrawler import DataEuropaCrawler
 import urllib3
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import concurrent.futures.thread
+from . import setup_logger
+from .ZenodoCrawler import ZenodoCrawler
+from .DataEuropaCrawler import DataEuropaCrawler
 from tqdm import tqdm
-from threading import Event
-import signal
 from sys import exit
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
+logger = setup_logger.create_logger()
 
 class OpenDataCrawler():
 
@@ -53,7 +48,6 @@ class OpenDataCrawler():
     def detect_dms(self):
         
         # Check dms
-          
         dms = dict([
             ('Zenodo','/api/records/'),
             ('DataEuropa', '/api/hub/search/')])

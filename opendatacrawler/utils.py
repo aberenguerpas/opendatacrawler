@@ -1,11 +1,12 @@
-
 import os
 import configparser
 import pathlib
 import hashlib
 from url_normalize import url_normalize
 from w3lib.url import url_query_cleaner
-from setup_logger import logger
+from . import setup_logger
+
+logger = setup_logger.create_logger()
 
 def check_url(url):
     """ Check if exist a well-formed url"""

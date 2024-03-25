@@ -1,15 +1,14 @@
 
-from crawler_interface_abc import OpenDataCrawlerInterface
-import configparser
-import utils
+from .crawler_interface_abc import OpenDataCrawlerInterface
+from . import utils
 import requests
-import sys
 import time
-from setup_logger import logger
+from . import setup_logger
 from tqdm import tqdm
 
 class ZenodoCrawler(OpenDataCrawlerInterface):
 
+    
     def __init__(self, domain, formats):
         self.domain = domain
         self.formats = formats
@@ -19,6 +18,7 @@ class ZenodoCrawler(OpenDataCrawlerInterface):
     def get_package_list(self):
         url = 'https://zenodo.org/api/records?q=&page={}&size=200&resource_type=dataset{}'
         formats = []
+        logger = setup_logger.create_logger()
 
         if self.formats:
             formats = ['&file_type={}'.format(format) for format in self.formats]
