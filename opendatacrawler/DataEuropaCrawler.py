@@ -46,15 +46,44 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                 # Check metadata existence and update dict.
                 if response_json.get('title'):
                     if response_json.get('title').get('es'):
-                          package_data['title'] = response_json.get('title').get('es')
+                          package_data['title'] = {
+                               'language':'es',
+                               'label':response_json.get('title').get('es')
+                          }
                     elif response_json.get('title').get('en'):
-                         package_data['title'] = response_json.get('title').get('en')
+                         package_data['title'] = {
+                               'language':'en',
+                               'label':response_json.get('title').get('en')
+                          }
+                    else:
+                        titles = response_json.get('title')
+                        t_keys = list(titles.keys())
+                        if len(t_keys)>0:
+                            package_data['title'] = {
+                                 'language':t_keys[0],
+                                 'label':titles.get(t_keys[0])
+                            }
                 
                 if response_json.get('description'):
                     if response_json.get('description').get('es'):
-                          package_data['description'] = response_json.get('description').get('es')
+                          package_data['description'] = {
+                               'language':'es',
+                               'label':response_json.get('description').get('es')
+                          }
                     elif response_json.get('description').get('en'):
-                         package_data['description'] = response_json.get('description').get('en')
+                         package_data['description'] = {
+                              'language':'en',
+                              'label':response_json.get('description').get('en')
+                         }
+                    else:
+                         descriptions = response_json.get('description')
+                         d_keys = list(descriptions.keys())
+                         if len(d_keys)>0:
+                              package_data['description'] = {
+                                   'language':d_keys[0],
+                                   'label':descriptions.get(d_keys[0])
+                              }
+                         
 
                 if response_json.get('country'):
                           package_data['country'] = response_json['country'].get('label', None)
@@ -78,11 +107,17 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                                       'language': 'es',
                                       'label': label.get('es')
                                  })
-                            if label.get('en'):
+                            elif label.get('en'):
                                  categories.append({
                                       'language': 'en',
                                       'label': label.get('en')
                                  })
+                            elif len(list(label.keys()))>0:
+                                 categories.append({
+                                      'language': list(label.keys())[0],
+                                      'label': label.get(list(label.keys())[0])
+                                 })
+                                
                     package_data['theme'] = categories 
                 
                 if response_json.get('keywords'):
@@ -95,6 +130,11 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                                         'language': language,
                                         'label': keyword.get('label')
                                     })
+                    if len(keywords) == 0:
+                         keywords = [{
+                              'language': keyword.get('language'),
+                              'label': keyword.get('label')
+                         } for keyword in response_json.get('keywords') ]
                     package_data['keywords'] = keywords
                           
                             

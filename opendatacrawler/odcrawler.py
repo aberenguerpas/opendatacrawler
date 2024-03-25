@@ -114,7 +114,19 @@ class OpenDataCrawler():
                     # Checks if response content is not a webpage.
                     response_content_type = r.headers.get('Content-Type')
                     is_html = 'text/html' in response_content_type
-                    
+
+                    # Tries to get resource format in case it is None
+                    if ext is None:
+                        if url.split('.')[-1] in self.formats:
+                            ext = url.split('.')[-1]
+                        elif response_content_type.split('/')[-1] in self.formats:
+                            ext = response_content_type.split('/')[-1]
+                        else:
+                            response_split = response_content_type.split(';')
+                            for split in response_split:
+                                if split.split('/')[-1] in self.formats:
+                                    ext = split.split('/')[-1]
+                   
                     if r.status_code == 200 and not is_html:
                         fname = id + '.' + ext 
                         path = self.save_path + "/data" + "/"+ fname
@@ -143,7 +155,7 @@ class OpenDataCrawler():
                             return (id, path, partial)
                         
                     else:
-                        logger.warning('Problem obtaining the resource %s', url)
+                        logger.warning('Problem obtaining the resource {}'.format(url))
 
                         return (id, None, False)
 
