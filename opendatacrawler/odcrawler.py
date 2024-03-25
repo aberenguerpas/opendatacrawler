@@ -93,6 +93,8 @@ class OpenDataCrawler():
                     for format in self.formats:
                         if format in DataEuropaCrawler.formats_dict:
                             formats.extend(DataEuropaCrawler.formats_dict.get(format))
+                        else:
+                            formats.append(format)
                     self.formats = formats
                 self.dms_instance = DataEuropaCrawler(self.dms, self.formats)
         else:
