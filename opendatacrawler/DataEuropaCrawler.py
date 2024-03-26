@@ -27,30 +27,30 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
 
                 # Initialize metadata dict.
                 package_data = {
-                     'id': id,
-                     'custom_id': hash_id,
-                     'url': None,
-                     'title': None,
-                     'description': None,
-                     'theme': None,
-                     'keywords': None,
-                     'publisher': None,
-                     'language': None,
-                     'issued': None,
-                     'modified': None,
-                     'country': None,
-                     'resources': None
+                     'dct:identifier': id,
+                     'custom:id': hash_id,
+                     'custom:url': None,
+                     'dct:title': None,
+                     'dct:description': None,
+                     'dcat:theme': None,
+                     'dcat:keyword': None,
+                     'dct:publisher': None,
+                     'dct:language': None,
+                     'dct:issued': None,
+                     'dct:modified': None,
+                     'custom:country': None,
+                     'dcat:distribution': None
                 }
 
                 # Check metadata existence and update dict.
                 if response_json.get('title'):
                     if response_json.get('title').get('es'):
-                          package_data['title'] = {
+                          package_data['dct:title'] = {
                                'language':'es',
                                'label':response_json.get('title').get('es')
                           }
                     elif response_json.get('title').get('en'):
-                         package_data['title'] = {
+                         package_data['dct:title'] = {
                                'language':'en',
                                'label':response_json.get('title').get('en')
                           }
@@ -58,19 +58,19 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                         titles = response_json.get('title')
                         t_keys = list(titles.keys())
                         if len(t_keys)>0:
-                            package_data['title'] = {
+                            package_data['dct:title'] = {
                                  'language':t_keys[0],
                                  'label':titles.get(t_keys[0])
                             }
                 
                 if response_json.get('description'):
                     if response_json.get('description').get('es'):
-                          package_data['description'] = {
+                          package_data['dct:description'] = {
                                'language':'es',
                                'label':response_json.get('description').get('es')
                           }
                     elif response_json.get('description').get('en'):
-                         package_data['description'] = {
+                         package_data['dct:description'] = {
                               'language':'en',
                               'label':response_json.get('description').get('en')
                          }
@@ -78,23 +78,23 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                          descriptions = response_json.get('description')
                          d_keys = list(descriptions.keys())
                          if len(d_keys)>0:
-                              package_data['description'] = {
+                              package_data['dct:description'] = {
                                    'language':d_keys[0],
                                    'label':descriptions.get(d_keys[0])
                               }
                          
 
                 if response_json.get('country'):
-                          package_data['country'] = response_json['country'].get('label', None)
+                          package_data['custom:country'] = response_json['country'].get('label', None)
                           
                 if response_json.get('language'):
-                          package_data['language'] = response_json['language'][0].get('label', None)
+                          package_data['dct:language'] = response_json['language'][0].get('label', None)
                           
                 if response_json.get('catalog'):
                      if response_json.get('catalog').get('publisher'):
-                          package_data['publisher'] = {}
-                          package_data['publisher']['name'] = response_json.get('catalog').get('publisher').get('name', None)
-                          package_data['publisher']['homepage'] = response_json.get('catalog').get('publisher').get('homepage', None)
+                          package_data['dct:publisher'] = {}
+                          package_data['dct:publisher']['name'] = response_json.get('catalog').get('publisher').get('name', None)
+                          package_data['dct:publisher']['homepage'] = response_json.get('catalog').get('publisher').get('homepage', None)
                 
                 if response_json.get('categories'):
                     categories = []
@@ -117,7 +117,7 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                                       'label': label.get(list(label.keys())[0])
                                  })
                                 
-                    package_data['theme'] = categories 
+                    package_data['dcat:theme'] = categories 
                 
                 if response_json.get('keywords'):
                     keywords = []
@@ -134,12 +134,12 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                               'language': keyword.get('language'),
                               'label': keyword.get('label')
                          } for keyword in response_json.get('keywords') ]
-                    package_data['keywords'] = keywords
+                    package_data['dcat:keyword'] = keywords
                           
                             
-                package_data['issued'] = response_json.get('issued', None)
-                package_data['modified'] = response_json.get('modified', None)
-                package_data['url'] = response_json.get('resource', None).replace("88u/dataset","data/datasets")
+                package_data['dct:issued'] = response_json.get('issued', None)
+                package_data['dct:modified'] = response_json.get('modified', None)
+                package_data['custom:url'] = response_json.get('resource', None).replace("88u/dataset","data/datasets")
 
                 # Save resources metadata.
                 if response_json.get('distributions'):
@@ -165,28 +165,54 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                             if resource.get('license'):
                                 license = resource.get('license').get('label', None)
                             
+                            resource_size = resource.get('byte_size', None)
+                            
+                            resource_title = None
+
+                            if resource.get('title'):
+                                resource_titles = resource.get('title')
+                                if resource_titles.get('es'):
+                                    resource_title = {
+                                        'language':'es',
+                                        'label':resource_titles.get('es') 
+                                    }
+                                elif resource_titles.get('en'):
+                                    resource_title = {
+                                         'language':'en',
+                                         'label':resource_titles.get('en')
+                                    }
+                                else:
+                                    t_r_keys = list(resource_titles.keys())
+                                    if len(t_r_keys)>0:
+                                         resource_title = {
+                                              'language':t_r_keys[0],
+                                              'label':resource_titles.get(t_r_keys[0])
+                                         }
+                                                                     
+                            
                             resources.append({
-                                'download_url': download_url,
-                                'resource_id': utils.generate_hash(self.domain, resource.get('id', None)),
-                                'mediatype': format.lower() if format else None,
-                                'license': license,
-                                'path': None                            
+                                'dct:title': resource_title,
+                                'dcat:downloadURL': download_url,
+                                'custom:resource_id': utils.generate_hash(self.domain, resource.get('id', None)),
+                                'dcat:mediaType': format.lower() if format else None,
+                                'dcat:byteSize': resource_size,
+                                'dct:rights': license,
+                                'custom:path': None                            
                             })
                     else:
                     # No resources, maybe link to web with the info
                         if package_data.get('landing_page'):
                             for landing in package_data.get('landing_page'):
                                 resources.append({
-                                    'download_url':  landing['resource'],
-                                    'resource_id': None,
-                                    'mediatype': 'Web',
-                                    'license': None,
-                                    'resource_id': None,
-                                    'title': list(landing['title'].keys())[0]
+                                    'dcat:downloadURL':  landing['resource'],
+                                    'custom:resource_id': None,
+                                    'dcat:mediaType': 'Web',
+                                    'dct:rights': None,
+                                    'dct:title': list(landing['title'].keys())[0]
                                     
                                 })
                 
-                package_data['resources'] = resources
+                package_data['dcat:distribution'] = resources
 
                 return package_data
             except Exception as e:

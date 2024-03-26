@@ -171,12 +171,12 @@ class OpenDataCrawler():
 
         """ Save the dict containing the metadata on a json file"""
         try:
-            with open(self.save_path + '/metadata' + "/meta_" + data['custom_id'] + '.json',
+            with open(self.save_path + '/metadata' + "/meta_" + data['custom:id'] + '.json',
                       'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
         except Exception as e:
             logger.error('Error saving metadata  %s',
-                         self.save_path + "/meta_"+data['custom_id']+'.json')
+                         self.save_path + "/meta_"+data['custom:id']+'.json')
             logger.error(e)
 
     def get_package_list(self):
@@ -187,18 +187,18 @@ class OpenDataCrawler():
 
     # Downloads and saves package resources. 
     def get_package_resources(self, package):
-        resources = package['resources']
+        resources = package['dcat:distribution']
         downloaded_resources = []
         updated_resources = []
         
         # Filters resources by format if specified. Selects all resources otherwise.
         if self.formats:
             for resource in resources:
-                format = resource['mediatype']
+                format = resource['dcat:mediaType']
                 if format and format in self.formats:
                     downloaded_resources.append(resource)
                 else:
-                    resource['path'] = None
+                    resource['custom:path'] = None
                     updated_resources.append(resource)
         else:
             downloaded_resources = resources
@@ -206,24 +206,24 @@ class OpenDataCrawler():
         # Downloads and saves selected resources.
         if len(downloaded_resources) > 0:
             for resource in downloaded_resources:
-                url = resource['download_url']
-                id = resource['resource_id']
-                mediatype = resource['mediatype']
+                url = resource['dcat:downloadURL']
+                id = resource['custom:resource_id']
+                mediatype = resource['dcat:mediaType']
 
                 result = self.save_dataset(url, mediatype, id)
                 current_path = result[1]
                 is_partial = result[2]
                 
                 if current_path != None and not is_partial :
-                    resource['path'] = current_path
+                    resource['custom:path'] = current_path
                 elif current_path != None:          
                     # Removes file if it was partially downloaded due to a timeout.
                     utils.delete_interrupted_files(current_path)
                 
                 updated_resources.append(resource)
 
-        package['resources'] = updated_resources
-        utils.save_temporal_ids(self.resume_path, [package['id']])
+        package['dcat:distribution'] = updated_resources
+        utils.save_temporal_ids(self.resume_path, [package['dct:identifier']])
         
         return package
 
@@ -248,7 +248,7 @@ class OpenDataCrawler():
                     self.save_metadata(updated_package)
             elif package:
                 self.save_metadata(package)
-                utils.save_temporal_ids(self.resume_path, [package['id']])
+                utils.save_temporal_ids(self.resume_path, [package['dct:identifier']])
         except KeyboardInterrupt:
             raise
             

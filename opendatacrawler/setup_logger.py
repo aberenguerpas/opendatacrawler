@@ -18,11 +18,11 @@ def create_logger():
     logger.setLevel(logging.DEBUG)
 
     directory = os.getcwd()
-    create_folder(directory + "../logs")
+    create_folder(directory + "./logs")
 
     today = datetime.now().strftime("%Y%m%d")
 
-    handler = logging.FileHandler('../logs/debug_'+str(today)+'.log', 'a', 'utf-8')
+    handler = logging.FileHandler('./logs/debug_'+str(today)+'.log', 'a', 'utf-8')
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
