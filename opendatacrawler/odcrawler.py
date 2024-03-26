@@ -1,13 +1,13 @@
 import os
 import requests
-import utils
+from opendatacrawler import utils
 import time
 import json
 import urllib3
 import time
-import setup_logger
-from ZenodoCrawler import ZenodoCrawler
-from DataEuropaCrawler import DataEuropaCrawler
+from opendatacrawler import setup_logger
+from opendatacrawler.portals.ZenodoCrawler import ZenodoCrawler
+from opendatacrawler.portals.DataEuropaCrawler import DataEuropaCrawler
 from tqdm import tqdm
 from sys import exit
 
@@ -16,7 +16,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logger = setup_logger.create_logger()
 
 class OpenDataCrawler():
-
     def __init__(self, domain, path, formats=None, only_metadata=False):
         
         if domain[-1]=="/":
@@ -85,8 +84,8 @@ class OpenDataCrawler():
                 if self.formats:
                     formats = []
                     for format in self.formats:
-                        if format in DataEuropaCrawler.formats_dict:
-                            formats.extend(DataEuropaCrawler.formats_dict.get(format))
+                        if format in DataEuropaCrawler.get_formats_dict():
+                            formats.extend(DataEuropaCrawler.get_formats_dict().get(format))
                         else:
                             formats.append(format)
                     self.formats = formats
@@ -237,7 +236,6 @@ class OpenDataCrawler():
             return saved_ids
         else:
             return None
-
 
     def process_package(self, id):
         try:

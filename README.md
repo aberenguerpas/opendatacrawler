@@ -3,7 +3,6 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
 
 <!-- PROJECT LOGO -->
 
@@ -91,7 +90,6 @@ To get a local copy up and running follow these simple example steps.
    ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 <!-- USAGE EXAMPLES -->
 
 ## Usage
@@ -129,7 +127,6 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 See the [open issues](https://github.com/aberenguerpas/opendatacrawler/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 <!-- LICENSE -->
 
 ## License
@@ -137,24 +134,19 @@ See the [open issues](https://github.com/aberenguerpas/opendatacrawler/issues) f
 Distributed under the MIT License. See `LICENSE` for more information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 ## Colaborators
 
 🙋‍♂️ Javier Ríos Cerdán
-
 🙋‍♂️ Alberto Berenguer Pastor
 
 <!-- CONTACT -->
 
 ## Contact
-
-🙋‍♂️Alberto Berenguer Pastor 
 ✉️ alberto.berenguer@ua.es
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
-
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
 [contributors-shield]: https://img.shields.io/github/contributors/aberenguerpas/opendatacrawler?style=for-the-badge
@@ -167,6 +159,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 [issues-url]: https://github.com/aberenguerpas/opendatacrawler/issues
 [license-shield]: https://img.shields.io/github/license/aberenguerpas/opendatacrawler?style=for-the-badge
 [license-url]: https://github.com/aberenguerpas/opendatacrawler/blob/main/LICENSE
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://www.linkedin.com/in/alberto-berenguer-pastor-220274154/
 [product-screenshot]: images/screenshot.png

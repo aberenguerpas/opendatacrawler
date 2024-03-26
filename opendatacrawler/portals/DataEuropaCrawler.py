@@ -1,21 +1,25 @@
 import requests
-import utils
-from crawler_interface_abc import OpenDataCrawlerInterface
+from opendatacrawler import utils
+from .crawler_interface_abc import OpenDataCrawlerInterface
 from tqdm import tqdm
+
+
 
 class DataEuropaCrawler(OpenDataCrawlerInterface):
     base_url = 'https://data.europa.eu/api/hub/search/'
-    formats_dict = {
-         'csv':['csv','text/csv','.csv','csv/utf8','file:///srv/udata/ftype/csv'],
-         'xlsx':['xlsx','xls','.xlsx','.xls','excel (.xlsx)'],
-         'pdf':['pdf','.pdf','application/pdf']
-    }
-
+    
     def __init__(self, domain, formats):
         self.domain = domain
         self.formats = formats
 
     # Retrieves and processes package/dataset metadata.
+    def get_formats_dict():
+        return {
+         'csv':['csv','text/csv','.csv','csv/utf8','file:///srv/udata/ftype/csv'],
+         'xlsx':['xlsx','xls','.xlsx','.xls','excel (.xlsx)'],
+         'pdf':['pdf','.pdf','application/pdf']
+        }  
+        
     def get_package(self, id):
             url = DataEuropaCrawler.base_url + 'datasets/{}'.format(id)
             try:

@@ -1,7 +1,7 @@
-import utils
-import setup_logger
+from opendatacrawler import utils
+from opendatacrawler import setup_logger
 from tqdm import tqdm
-from odcrawler import OpenDataCrawler
+from opendatacrawler.odcrawler import OpenDataCrawler
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from sys import exit
 import argparse
@@ -21,7 +21,7 @@ def main():
                         help='Only save metadata.')
   
     args = vars(parser.parse_args())
-    
+
     logger = setup_logger.create_logger()
 
     # Save arguments to variables
@@ -32,7 +32,6 @@ def main():
         map(lambda x: x.lower(), args['formats'])) if args['formats'] else None
 
     # Main script
-
     try:
         if (utils.check_url(url)):
             crawler = OpenDataCrawler(domain=url, path=path, formats=formats, only_metadata=only_metadata)

@@ -4,9 +4,6 @@ import pathlib
 import hashlib
 from url_normalize import url_normalize
 from w3lib.url import url_query_cleaner
-import setup_logger
-
-logger = setup_logger.create_logger()
 
 def check_url(url):
     """ Check if exist a well-formed url"""
@@ -84,9 +81,9 @@ def get_difference(new_ids, last_ids):
 def delete_interrupted_files(path):
     try:
         os.remove(path)
-        logger.info('Removed {}'.format(path))
+        print('Removed {}'.format(path))
     except:
-        logger.info('Could not remove {}'.format(path))
+        print('Could not remove {}'.format(path))
 
 
 

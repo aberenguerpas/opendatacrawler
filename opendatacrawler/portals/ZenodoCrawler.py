@@ -1,14 +1,11 @@
-
-from crawler_interface_abc import OpenDataCrawlerInterface
-import utils
+from opendatacrawler.portals.crawler_interface_abc import OpenDataCrawlerInterface
+from opendatacrawler import utils
 import requests
 import time
-import setup_logger
+from opendatacrawler import setup_logger
 from tqdm import tqdm
 
 class ZenodoCrawler(OpenDataCrawlerInterface):
-
-    
     def __init__(self, domain, formats):
         self.domain = domain
         self.formats = formats
