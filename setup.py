@@ -2,9 +2,9 @@ from setuptools import setup, find_packages
 
 setup(
     name='opendatacrawler',
-    version='0.0.3',
+    version='1.0.0',
     packages=find_packages(),
-    description='An crawler for Open Data portals',
+    description='A crawler for Open Data portals',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     author='Alberto Berenguer Pastor, Javier Ríos Cerdán',

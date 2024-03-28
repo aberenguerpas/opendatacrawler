@@ -1,10 +1,11 @@
-from opendatacrawler.portals.crawler_interface_abc import OpenDataCrawlerInterface
-from opendatacrawler import utils
+from portals.crawler_interface_abc import OpenDataCrawlerInterface
+from utils import utils
 import requests
 import time
-from opendatacrawler import setup_logger
+from utils import setup_logger
 from tqdm import tqdm
 
+logger = setup_logger.logger
 class ZenodoCrawler(OpenDataCrawlerInterface):
     def __init__(self, domain, formats):
         self.domain = domain
@@ -15,7 +16,6 @@ class ZenodoCrawler(OpenDataCrawlerInterface):
     def get_package_list(self):
         url = 'https://zenodo.org/api/records?q=&page={}&size=200&resource_type=dataset{}'
         formats = []
-        logger = setup_logger.create_logger()
 
         if self.formats:
             formats = ['&file_type={}'.format(format) for format in self.formats]
@@ -109,5 +109,3 @@ class ZenodoCrawler(OpenDataCrawlerInterface):
             return package_data
         except requests.exceptions.HTTPError as errh:
             print(f"HTTP Error: {errh}")
-
-

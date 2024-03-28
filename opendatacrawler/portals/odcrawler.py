@@ -1,20 +1,18 @@
 import os
 import requests
-from opendatacrawler import utils
+from utils import utils
 import time
 import json
 import urllib3
 import time
-from opendatacrawler import setup_logger
-from opendatacrawler.portals.ZenodoCrawler import ZenodoCrawler
-from opendatacrawler.portals.DataEuropaCrawler import DataEuropaCrawler
+from utils import setup_logger
+from portals.ZenodoCrawler import ZenodoCrawler
+from portals.DataEuropaCrawler import DataEuropaCrawler
 from tqdm import tqdm
 from sys import exit
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-logger = setup_logger.create_logger()
-
+logger = setup_logger.logger
 class OpenDataCrawler():
     def __init__(self, domain, path, formats=None, only_metadata=False):
         

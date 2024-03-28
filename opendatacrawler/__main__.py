@@ -1,15 +1,17 @@
-from opendatacrawler import utils
-from opendatacrawler import setup_logger
+from utils import utils
+from utils import setup_logger
 from tqdm import tqdm
-from opendatacrawler.odcrawler import OpenDataCrawler
+from portals.odcrawler import OpenDataCrawler
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from sys import exit
 import argparse
 import os
 import traceback
 
-
 def main():
+    logger = setup_logger.logger
+
+    # Arguments
     parser = argparse.ArgumentParser()
 
     # Arguments
@@ -21,8 +23,6 @@ def main():
                         help='Only save metadata.')
   
     args = vars(parser.parse_args())
-
-    logger = setup_logger.create_logger()
 
     # Save arguments to variables
     url = args['domain']

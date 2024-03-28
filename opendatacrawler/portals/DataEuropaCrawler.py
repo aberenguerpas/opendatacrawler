@@ -1,9 +1,8 @@
 import requests
-from opendatacrawler import utils
-from .crawler_interface_abc import OpenDataCrawlerInterface
+import urllib.parse
+from utils import utils
+from portals.crawler_interface_abc import OpenDataCrawlerInterface
 from tqdm import tqdm
-
-
 
 class DataEuropaCrawler(OpenDataCrawlerInterface):
     base_url = 'https://data.europa.eu/api/hub/search/'
@@ -94,12 +93,11 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                 if response_json.get('language'):
                           package_data['dct:language'] = response_json['language'][0].get('label', None)
                           
-                if response_json.get('catalog'):
-                     if response_json.get('catalog').get('publisher'):
-                          package_data['dct:publisher'] = {}
-                          package_data['dct:publisher']['name'] = response_json.get('catalog').get('publisher').get('name', None)
-                          package_data['dct:publisher']['homepage'] = response_json.get('catalog').get('publisher').get('homepage', None)
-                
+                if response_json.get('publisher', None):
+                    package_data['dct:publisher'] = {}
+                    package_data['dct:publisher']['name'] = response_json.get('publisher',{}).get('name', None)
+                    package_data['dct:publisher']['homepage'] = response_json.get('publisher',{}).get('resource', None)
+        
                 if response_json.get('categories'):
                     categories = []
                     for category in response_json.get('categories'):
@@ -196,7 +194,7 @@ class DataEuropaCrawler(OpenDataCrawlerInterface):
                             
                             resources.append({
                                 'dct:title': resource_title,
-                                'dcat:downloadURL': download_url,
+                                'dcat:downloadURL': urllib.parse.unquote(download_url),
                                 'custom:resource_id': utils.generate_hash(self.domain, resource.get('id', None)),
                                 'dcat:mediaType': format.lower() if format else None,
                                 'dcat:byteSize': resource_size,
