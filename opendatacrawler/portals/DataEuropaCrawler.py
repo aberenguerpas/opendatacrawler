@@ -1,7 +1,7 @@
 import requests
 import urllib.parse
-from utils import utils
-from portals.crawler_interface_abc import OpenDataCrawlerInterface
+from opendatacrawler.utils import utils
+from opendatacrawler.portals.crawler_interface_abc import OpenDataCrawlerInterface
 from tqdm import tqdm
 
 class DataEuropaCrawler(OpenDataCrawlerInterface):

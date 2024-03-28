@@ -1,8 +1,8 @@
-from portals.crawler_interface_abc import OpenDataCrawlerInterface
-from utils import utils
+from opendatacrawler.portals.crawler_interface_abc import OpenDataCrawlerInterface
+from opendatacrawler.utils import utils
 import requests
 import time
-from utils import setup_logger
+from opendatacrawler.utils import setup_logger
 from tqdm import tqdm
 
 logger = setup_logger.logger

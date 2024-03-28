@@ -1,7 +1,6 @@
 from abc import abstractmethod
 from abc import ABCMeta
 
-
 class OpenDataCrawlerInterface(metaclass=ABCMeta):
     @abstractmethod
     def get_package_list():
